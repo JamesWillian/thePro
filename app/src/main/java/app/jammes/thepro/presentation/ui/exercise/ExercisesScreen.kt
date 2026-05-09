@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -89,7 +90,8 @@ fun ExercisesScreen(viewModel: ExerciseViewModel = hiltViewModel()) {
                     IconButton(onClick = { csvLauncher.launch(arrayOf("text/*", "text/csv", "text/comma-separated-values", "*/*")) }) {
                         Icon(Icons.Filled.FileUpload, contentDescription = "Importar CSV")
                     }
-                }
+                },
+                windowInsets = WindowInsets(0, 0, 0, 0)
             )
         },
         floatingActionButton = {
@@ -100,7 +102,8 @@ fun ExercisesScreen(viewModel: ExerciseViewModel = hiltViewModel()) {
                 elevation = FloatingActionButtonDefaults.elevation()
             )
         },
-        snackbarHost = { SnackbarHost(snackbar) }
+        snackbarHost = { SnackbarHost(snackbar) },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             OutlinedTextField(

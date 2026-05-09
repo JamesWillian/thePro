@@ -98,6 +98,14 @@ class WorkoutEditViewModel @Inject constructor(
         }
     }
 
+    fun removeExerciseById(exerciseId: Long) {
+        _state.update { current ->
+            val firstMatch = current.items.indexOfFirst { it.exercise.id == exerciseId }
+            if (firstMatch < 0) current
+            else current.copy(items = current.items.filterIndexed { i, _ -> i != firstMatch })
+        }
+    }
+
     fun moveItem(from: Int, to: Int) {
         _state.update { current ->
             if (from !in current.items.indices || to !in current.items.indices) return@update current

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -45,7 +46,15 @@ fun WeekScreen(viewModel: WeekViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var assigningTo by remember { mutableStateOf<DayOfWeekBr?>(null) }
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Programação Semanal") }) }) { padding ->
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Programação Semanal") },
+                windowInsets = WindowInsets(0, 0, 0, 0)
+            )
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) { padding ->
         LazyColumn(
             modifier = Modifier.padding(padding).fillMaxSize().padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)

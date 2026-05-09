@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -54,9 +55,11 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
                     IconButton(onClick = viewModel::thisWeek) {
                         Icon(Icons.Filled.Today, contentDescription = "Semana atual")
                     }
-                }
+                },
+                windowInsets = WindowInsets(0, 0, 0, 0)
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize().padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {

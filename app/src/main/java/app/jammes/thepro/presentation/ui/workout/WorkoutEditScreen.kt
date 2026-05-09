@@ -1,9 +1,16 @@
 package app.jammes.thepro.presentation.ui.workout
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -11,9 +18,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
@@ -23,7 +32,6 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -80,7 +88,8 @@ fun WorkoutEditScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar")
                     }
-                }
+                },
+                windowInsets = WindowInsets(0, 0, 0, 0)
             )
         },
         floatingActionButton = {
@@ -90,7 +99,8 @@ fun WorkoutEditScreen(
                 text = { Text("Salvar") }
             )
         },
-        snackbarHost = { SnackbarHost(snackbar) }
+        snackbarHost = { SnackbarHost(snackbar) },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
             OutlinedTextField(
@@ -150,12 +160,10 @@ fun WorkoutEditScreen(
     if (pickerOpen) {
         ExercisePickerDialog(
             available = available,
-            alreadySelectedIds = state.items.map { it.exercise.id }.toSet(),
+            selectedIds = state.items.map { it.exercise.id }.toSet(),
             onDismiss = { pickerOpen = false },
-            onPick = {
-                viewModel.addExercise(it)
-                pickerOpen = false
-            }
+            onAdd = viewModel::addExercise,
+            onRemove = viewModel::removeExerciseById
         )
     }
 }
@@ -252,9 +260,10 @@ private fun NumberField(
 @Composable
 private fun ExercisePickerDialog(
     available: List<Exercise>,
-    alreadySelectedIds: Set<Long>,
+    selectedIds: Set<Long>,
     onDismiss: () -> Unit,
-    onPick: (Exercise) -> Unit
+    onAdd: (Exercise) -> Unit,
+    onRemove: (Long) -> Unit
 ) {
     var query by remember { mutableStateOf("") }
     val filtered = remember(available, query) {
@@ -283,28 +292,14 @@ private fun ExercisePickerDialog(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else {
-                    LazyColumn(modifier = Modifier.fillMaxWidth().height(320.dp)) {
+                    LazyColumn(modifier = Modifier.fillMaxWidth().height(360.dp)) {
                         itemsIndexed(filtered, key = { _, e -> e.id }) { _, exercise ->
-                            ListItem(
-                                headlineContent = { Text(exercise.name) },
-                                supportingContent = { Text(exercise.type.displayName) },
-                                trailingContent = {
-                                    if (exercise.id in alreadySelectedIds) {
-                                        Text("já incluso", color = MaterialTheme.colorScheme.tertiary)
-                                    } else null
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                                    .padding(vertical = 2.dp)
+                            ExercisePickerRow(
+                                exercise = exercise,
+                                isSelected = exercise.id in selectedIds,
+                                onAdd = { onAdd(exercise) },
+                                onRemove = { onRemove(exercise.id) }
                             )
-                            TextButton(
-                                onClick = { onPick(exercise) },
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-                            ) {
-                                Text(
-                                    if (exercise.id in alreadySelectedIds) "Adicionar novamente"
-                                    else "Adicionar"
-                                )
-                            }
                             HorizontalDivider()
                         }
                     }
@@ -313,6 +308,52 @@ private fun ExercisePickerDialog(
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text("Fechar") } }
     )
+}
+
+@Composable
+private fun ExercisePickerRow(
+    exercise: Exercise,
+    isSelected: Boolean,
+    onAdd: () -> Unit,
+    onRemove: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 12.dp, vertical = 12.dp)
+        ) {
+            Text(exercise.name, fontWeight = FontWeight.Medium)
+            Text(
+                exercise.type.displayName,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        val bg = if (isSelected) MaterialTheme.colorScheme.tertiary
+        else MaterialTheme.colorScheme.surfaceVariant
+        val fg = if (isSelected) MaterialTheme.colorScheme.onTertiary
+        else MaterialTheme.colorScheme.onSurfaceVariant
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .aspectRatio(1f)
+                .background(bg)
+                .clickable { if (isSelected) onRemove() else onAdd() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (isSelected) Icons.Filled.Check else Icons.Filled.Add,
+                contentDescription = if (isSelected) "Remover" else "Adicionar",
+                tint = fg
+            )
+        }
+    }
 }
 
 private fun formatNumber(v: Double): String =
