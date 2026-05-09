@@ -1,0 +1,129 @@
+nome;descricao;tipo
+Supino reto com barra;Trabalha peitoral maior, deltoide anterior e tríceps. Deite no banco, segure a barra na largura dos ombros e desça até o peito;MUSCULACAO
+Supino inclinado com barra;Foco no peitoral superior. Banco inclinado entre 30 e 45 graus;MUSCULACAO
+Supino declinado com barra;Foco no peitoral inferior. Banco declinado;MUSCULACAO
+Supino reto com halteres;Maior amplitude de movimento que a barra. Trabalha estabilizadores;MUSCULACAO
+Supino inclinado com halteres;Peitoral superior com maior recrutamento de estabilizadores;MUSCULACAO
+Crucifixo reto com halteres;Isolamento do peitoral. Movimento amplo de abertura;MUSCULACAO
+Crucifixo inclinado com halteres;Isolamento do peitoral superior;MUSCULACAO
+Crossover na polia;Aperto final do peitoral. Convergência no centro;MUSCULACAO
+Peck deck;Isolamento do peitoral na máquina voador;MUSCULACAO
+Flexão de braço;Exercício livre para peito, tríceps e core;MUSCULACAO
+Mergulho em paralelas;Peitoral inferior e tríceps. Tronco inclinado para frente foca peito;MUSCULACAO
+Puxada frontal na barra;Trabalha latíssimo do dorso. Pegada pronada na largura dos ombros;MUSCULACAO
+Puxada na barra fixa;Pull-up. Peso corporal trabalha dorsais e bíceps;MUSCULACAO
+Remada curvada com barra;Trabalha dorsal médio, romboides e trapézio. Tronco a 45 graus;MUSCULACAO
+Remada baixa máquina;Sentado, puxar para abdômen. Foco no dorsal médio;MUSCULACAO
+Remada cavalinho;T-bar row. Trabalha dorsal médio e inferior;MUSCULACAO
+Remada unilateral com halter;Apoiado no banco. Trabalha um lado por vez;MUSCULACAO
+Pulldown reto;Cabo com barra reta. Foco em dorsal inferior;MUSCULACAO
+Hiperextensão lombar;Banco romano. Trabalha eretores da espinha;MUSCULACAO
+Levantamento terra;Deadlift. Cadeia posterior completa: lombar, glúteo, posterior de coxa;MUSCULACAO
+Pullover;Halter ou barra. Trabalha dorsal e serrátil;MUSCULACAO
+Desenvolvimento militar com barra;Em pé ou sentado. Trabalha deltoide e tríceps;MUSCULACAO
+Desenvolvimento Arnold;Halteres com rotação dos punhos. Trabalha todas porções do deltoide;MUSCULACAO
+Desenvolvimento com halteres;Sentado. Maior amplitude que a barra;MUSCULACAO
+Elevação lateral;Halteres ou cabo. Isolamento do deltoide médio;MUSCULACAO
+Elevação frontal;Halteres ou anilha. Isolamento do deltoide anterior;MUSCULACAO
+Crucifixo invertido;Halteres ou peck deck inverso. Trabalha deltoide posterior;MUSCULACAO
+Encolhimento;Shrug com halteres ou barra. Foco no trapézio superior;MUSCULACAO
+Remada alta;Barra ou cabo até a altura do queixo. Deltoide e trapézio;MUSCULACAO
+Rosca direta com barra;Bíceps. Cotovelos junto ao corpo;MUSCULACAO
+Rosca alternada com halteres;Bíceps. Um braço por vez com supinação;MUSCULACAO
+Rosca martelo;Pegada neutra. Trabalha bíceps e braquial;MUSCULACAO
+Rosca scott;No banco scott. Isolamento do bíceps;MUSCULACAO
+Rosca concentrada;Sentado, cotovelo apoiado no joelho. Pico de bíceps;MUSCULACAO
+Rosca 21;7 reps parciais inferior + 7 superior + 7 completas;MUSCULACAO
+Rosca cabo;Polia baixa com barra ou corda. Tensão constante;MUSCULACAO
+Tríceps testa;French press com barra ou halteres. Deitado no banco;MUSCULACAO
+Tríceps corda na polia;Polia alta com corda. Abrir as mãos no final;MUSCULACAO
+Tríceps francês;Sentado, halter atrás da cabeça. Trabalha cabeça longa;MUSCULACAO
+Tríceps coice;Kickback com halter. Inclinado para frente;MUSCULACAO
+Supino fechado;Pegada fechada na barra. Foco no tríceps;MUSCULACAO
+Tríceps polia barra;Pushdown com barra reta. Cotovelos fixos;MUSCULACAO
+Agachamento livre com barra;Back squat. Rei dos exercícios para pernas;MUSCULACAO
+Agachamento smith;Na máquina smith. Movimento mais estável;MUSCULACAO
+Leg press 45;Pernas na plataforma. Trabalha quadríceps, glúteos e posterior;MUSCULACAO
+Cadeira extensora;Isolamento do quadríceps;MUSCULACAO
+Mesa flexora;Deitado de bruços. Isolamento do posterior de coxa;MUSCULACAO
+Cadeira flexora;Sentado. Isolamento do posterior;MUSCULACAO
+Stiff;Posterior de coxa e glúteos. Pernas semi-flexionadas;MUSCULACAO
+Avanço;Lunge com halteres ou barra. Unilateral;MUSCULACAO
+Búlgaro;Split squat com pé traseiro elevado. Foco em quadríceps e glúteo;MUSCULACAO
+Hack squat;Na máquina. Foco no quadríceps;MUSCULACAO
+Adutora máquina;Isolamento dos adutores (interno da coxa);MUSCULACAO
+Abdutora máquina;Isolamento dos abdutores e glúteo médio;MUSCULACAO
+Levantamento terra romeno;Variação com pernas mais retas. Foco em posterior;MUSCULACAO
+Hip thrust;Glúteos com barra apoiada na pelve. Costas no banco;MUSCULACAO
+Glúteo na polia;Polia baixa com tornozeleira. Coice;MUSCULACAO
+Coice na máquina;4 apoios. Foco no glúteo máximo;MUSCULACAO
+Elevação pélvica;Glute bridge no chão ou com peso;MUSCULACAO
+Agachamento sumô;Pernas afastadas, pontas dos pés para fora. Foco em glúteo e adutor;MUSCULACAO
+Panturrilha em pé;Em máquina ou step. Trabalha gastrocnêmio;MUSCULACAO
+Panturrilha sentado;Foca o sóleo;MUSCULACAO
+Panturrilha no leg press;Pontas dos pés na plataforma;MUSCULACAO
+Burrinho;Donkey calf raise. Inclinado para frente com peso na lombar;MUSCULACAO
+Esteira corrida;Treino aeróbico contínuo ou intervalado;CARDIO
+Esteira caminhada;Caminhada moderada ou inclinada para queima de gordura;CARDIO
+Bicicleta ergométrica;Pedalada estacionária. Baixo impacto;CARDIO
+Bicicleta spinning;Aula coletiva intensa. Alta intensidade;CARDIO
+Elíptico;Transport com baixo impacto articular;CARDIO
+Pular corda;Excelente para condicionamento e coordenação;CARDIO
+Escada simulador;Stair climber. Trabalha glúteos enquanto faz cardio;CARDIO
+Remo ergométrico;Trabalha corpo todo. Cardio e força;CARDIO
+Natação;Cardio de baixo impacto. Trabalha corpo inteiro;CARDIO
+HIIT na esteira;Tiros de alta intensidade alternados com descanso;CARDIO
+Air bike;Bicicleta com braços. Cardio total;CARDIO
+Abdominal supra;Crunch tradicional. Eleva tronco até as escápulas saírem do chão;CORE
+Abdominal infra;Eleva quadril e pernas. Trabalha porção inferior do reto abdominal;CORE
+Abdominal oblíquo;Cotovelo ao joelho oposto. Trabalha oblíquos;CORE
+Prancha frontal;Isometria em apoio nos antebraços. Core completo;CORE
+Prancha lateral;Apoio em um antebraço. Trabalha oblíquo e quadrado lombar;CORE
+Prancha dinâmica;Alternar entre antebraços e mãos estendidas;CORE
+Russian twist;Sentado, rotação do tronco com peso. Oblíquos;CORE
+Abdominal bicicleta;Pedalar no ar tocando cotovelo no joelho oposto;CORE
+Elevação de pernas;Deitado ou pendurado na barra. Abdômen inferior;CORE
+Abdominal canivete;V-up. Pés e mãos se encontram no alto;CORE
+Hollow body hold;Isometria com lombar pressionada no chão;CORE
+Dead bug;Deitado, alternando braço e perna opostos;CORE
+Bird dog;4 apoios, estende braço e perna opostos;CORE
+Mountain climber;Em prancha alta, alternar joelhos ao peito;CORE
+Pallof press;Polia lateral, anti-rotação;CORE
+Ab wheel;Roda abdominal. Avançado para core;CORE
+Alongamento isquiotibiais;Sentado tocar os pés. Posterior de coxa;FLEXIBILIDADE
+Alongamento quadríceps;Em pé, levar calcanhar ao glúteo;FLEXIBILIDADE
+Alongamento panturrilha;Apoiar mãos na parede com perna estendida atrás;FLEXIBILIDADE
+Alongamento peitoral;Braço apoiado na parede, girar o tronco;FLEXIBILIDADE
+Alongamento ombro;Cruzar braço à frente do corpo;FLEXIBILIDADE
+Alongamento lombar;Joelhos ao peito deitado de costas;FLEXIBILIDADE
+Alongamento glúteos;Tornozelo sobre joelho oposto, puxar coxa;FLEXIBILIDADE
+Postura da cobra;Yoga, deitado de bruços eleva o tronco;FLEXIBILIDADE
+Postura da criança;Yoga, sentado nos calcanhares com tronco à frente;FLEXIBILIDADE
+Cachorro olhando para baixo;Down dog. Yoga, V invertido;FLEXIBILIDADE
+Borboleta;Sentado com solas dos pés juntas. Adutores e quadril;FLEXIBILIDADE
+Gato e vaca;Mobilidade da coluna em 4 apoios;FLEXIBILIDADE
+Foam roller lombar;Liberação miofascial da lombar;FLEXIBILIDADE
+Foam roller quadríceps;Liberação miofascial do quadríceps;FLEXIBILIDADE
+Burpee;Agachar, prancha, flexão, salto. Corpo todo;FUNCIONAL
+Box jump;Salto sobre caixote. Potência de membros inferiores;FUNCIONAL
+Kettlebell swing;Balanço russo do kettlebell. Cadeia posterior;FUNCIONAL
+Kettlebell snatch;Arranco do kettlebell. Movimento explosivo;FUNCIONAL
+Kettlebell clean;Levar kettlebell até o ombro;FUNCIONAL
+Wall ball;Agachar e arremessar bola na parede. Corpo todo;FUNCIONAL
+Thruster;Front squat + push press. Combinado intenso;FUNCIONAL
+Battle rope;Cordas navais. Cardio e resistência muscular;FUNCIONAL
+Farmer walk;Caminhar com peso nas mãos. Pegada e core;FUNCIONAL
+Turkish get-up;Movimento complexo do solo até em pé com peso. Estabilidade;FUNCIONAL
+Slam ball;Arremesso da medicine ball no chão. Potência;FUNCIONAL
+Sled push;Empurrar o trenó. Pernas, glúteos e cardio;FUNCIONAL
+Sled pull;Puxar o trenó. Cadeia posterior;FUNCIONAL
+TRX remada;Suspensão TRX. Trabalha dorsais com peso corporal;FUNCIONAL
+Agachamento com salto;Squat jump. Potência de membros inferiores;FUNCIONAL
+Polichinelo;Jumping jack. Aquecimento e cardio;FUNCIONAL
+Skipping alto;Joelhos altos no lugar. Cardio e coordenação;FUNCIONAL
+Step up;Subir no banco com halteres. Unilateral;FUNCIONAL
+Clean and jerk;Levantamento olímpico. Arranco completo até acima da cabeça;FUNCIONAL
+Snatch;Arranco olímpico. Barra do chão até acima da cabeça em um movimento;FUNCIONAL
+Caminhada inclinada;Esteira em alta inclinação. Glúteos e queima calórica;OUTRO
+Yoga saudação ao sol;Sequência de posturas de yoga;OUTRO
+Pilates the hundred;Exercício de respiração e core do pilates;OUTRO
