@@ -1,63 +1,56 @@
 package app.jammes.thepro.presentation.ui.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-
-private val LightColors = lightColorScheme(
-    primary = Primary,
-    onPrimary = OnPrimary,
-    primaryContainer = PrimaryContainer,
-    onPrimaryContainer = OnPrimaryContainer,
-    secondary = Secondary,
-    onSecondary = OnSecondary,
-    secondaryContainer = SecondaryContainer,
-    onSecondaryContainer = OnSecondaryContainer,
-    tertiary = Tertiary,
-    onTertiary = OnTertiary,
-    background = BackgroundLight,
-    surface = SurfaceLight
-)
 
 private val DarkColors = darkColorScheme(
-    primary = Primary,
-    onPrimary = OnPrimary,
-    primaryContainer = OnPrimaryContainer,
-    onPrimaryContainer = PrimaryContainer,
-    secondary = Secondary,
-    onSecondary = OnSecondary,
-    secondaryContainer = OnSecondaryContainer,
-    onSecondaryContainer = SecondaryContainer,
-    tertiary = Tertiary,
-    onTertiary = OnTertiary,
-    background = BackgroundDark,
-    surface = SurfaceDark
+    primary = Accent,
+    onPrimary = TextOnDark,
+    primaryContainer = AccentDim,
+    onPrimaryContainer = TextOnDark,
+
+    secondary = Navy,
+    onSecondary = TextOnDark,
+    secondaryContainer = NavyDeep,
+    onSecondaryContainer = TextMuted,
+
+    tertiary = NavyDeep,
+    onTertiary = TextOnDark,
+    tertiaryContainer = NavyDeep,
+    onTertiaryContainer = TextMuted,
+
+    background = Black,
+    onBackground = TextOnDark,
+
+    surface = NavyDeep,
+    onSurface = TextOnDark,
+    surfaceVariant = Navy,
+    onSurfaceVariant = TextMuted,
+
+    surfaceContainerLowest = Black,
+    surfaceContainerLow = Black,
+    surfaceContainer = NavyDeep,
+    surfaceContainerHigh = NavyDeep,
+    surfaceContainerHighest = Navy,
+
+    surfaceTint = Accent,
+
+    outline = OutlineDim,
+    outlineVariant = OutlineFaint,
+
+    error = DangerRed,
+    onError = TextOnDark,
+    errorContainer = DangerRed,
+    onErrorContainer = TextOnDark
 )
 
 @Composable
-fun ThePROTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
-) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context)
-            else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColors
-        else -> LightColors
-    }
+fun ThePROTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = DarkColors,
         typography = AppTypography,
+        shapes = AppShapes,
         content = content
     )
 }

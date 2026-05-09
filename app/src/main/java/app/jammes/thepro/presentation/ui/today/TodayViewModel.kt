@@ -60,13 +60,6 @@ class TodayViewModel @Inject constructor(
         selectedDate.value = date
     }
 
-    fun selectDay(day: DayOfWeekBr) {
-        val today = LocalDate.now()
-        val todayDow = DayOfWeekBr.fromJavaDayOfWeek(today.dayOfWeek)
-        val diff = day.isoValue - todayDow.isoValue
-        selectedDate.value = today.plusDays(diff.toLong())
-    }
-
     fun markCompleted(sessionId: Long) {
         viewModelScope.launch { updateSessionStatus(sessionId, SessionStatus.CONCLUIDO) }
     }
