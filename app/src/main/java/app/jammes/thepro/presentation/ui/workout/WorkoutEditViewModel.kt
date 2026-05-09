@@ -9,6 +9,8 @@ import app.jammes.thepro.domain.usecase.ObserveExercisesUseCase
 import app.jammes.thepro.domain.usecase.ObserveWorkoutByIdUseCase
 import app.jammes.thepro.domain.usecase.SaveWorkoutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,14 +19,15 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 data class WorkoutEditUiState(
     val id: Long? = null,
     val name: String = "",
     val description: String = "",
-    val items: List<WorkoutExercise> = emptyList(),
-    val saved: Boolean = false
+    val items: List<WorkoutExercise> = emptyList()
 )
 
 @HiltViewModel
@@ -47,11 +50,14 @@ class WorkoutEditViewModel @Inject constructor(
     private val _events = MutableSharedFlow<String>(extraBufferCapacity = 4)
     val events = _events.asSharedFlow()
 
+    private val saveMutex = Mutex()
+    private var nameDescDebounceJob: Job? = null
+
     fun load(id: Long?) {
         if (id == null || id <= 0) return
         viewModelScope.launch {
             observeWorkout(id).collect { w ->
-                if (w != null) {
+                if (w != null && _state.value.id == null) {
                     _state.update {
                         it.copy(
                             id = w.id,
@@ -65,8 +71,15 @@ class WorkoutEditViewModel @Inject constructor(
         }
     }
 
-    fun setName(value: String) = _state.update { it.copy(name = value) }
-    fun setDescription(value: String) = _state.update { it.copy(description = value) }
+    fun setName(value: String) {
+        _state.update { it.copy(name = value) }
+        scheduleNameDescAutoSave()
+    }
+
+    fun setDescription(value: String) {
+        _state.update { it.copy(description = value) }
+        scheduleNameDescAutoSave()
+    }
 
     fun addExercise(exercise: Exercise) {
         _state.update { current ->
@@ -82,6 +95,7 @@ class WorkoutEditViewModel @Inject constructor(
                 )
             )
         }
+        triggerAutoSave()
     }
 
     fun updateItem(index: Int, transform: (WorkoutExercise) -> WorkoutExercise) {
@@ -96,6 +110,7 @@ class WorkoutEditViewModel @Inject constructor(
         _state.update { current ->
             current.copy(items = current.items.filterIndexed { i, _ -> i != index })
         }
+        triggerAutoSave()
     }
 
     fun removeExerciseById(exerciseId: Long) {
@@ -104,6 +119,7 @@ class WorkoutEditViewModel @Inject constructor(
             if (firstMatch < 0) current
             else current.copy(items = current.items.filterIndexed { i, _ -> i != firstMatch })
         }
+        triggerAutoSave()
     }
 
     fun moveItem(from: Int, to: Int) {
@@ -114,27 +130,38 @@ class WorkoutEditViewModel @Inject constructor(
             list.add(to, item)
             current.copy(items = list)
         }
+        triggerAutoSave()
     }
 
-    fun save() {
+    private fun triggerAutoSave() {
+        viewModelScope.launch { performSave() }
+    }
+
+    private fun scheduleNameDescAutoSave() {
+        if (_state.value.items.isEmpty()) return
+        nameDescDebounceJob?.cancel()
+        nameDescDebounceJob = viewModelScope.launch {
+            delay(NAME_DESC_DEBOUNCE_MS)
+            performSave()
+        }
+    }
+
+    private suspend fun performSave(): Long? = saveMutex.withLock {
         val s = _state.value
-        if (s.name.isBlank()) {
-            _events.tryEmit("Informe o nome do treino")
-            return
-        }
-        if (s.items.isEmpty()) {
-            _events.tryEmit("Adicione pelo menos um exercício")
-            return
-        }
-        viewModelScope.launch {
-            runCatching {
-                val id = saveWorkout(
-                    Workout(id = s.id ?: 0L, name = s.name, description = s.description),
-                    s.items
-                )
-                _state.update { it.copy(id = id, saved = true) }
-                _events.tryEmit("Treino salvo")
-            }.onFailure { _events.tryEmit(it.message ?: "Erro ao salvar") }
-        }
+        if (s.name.isBlank() || s.items.isEmpty()) return@withLock null
+        runCatching {
+            val id = saveWorkout(
+                Workout(id = s.id ?: 0L, name = s.name, description = s.description),
+                s.items
+            )
+            if (s.id != id) _state.update { it.copy(id = id) }
+            id
+        }.onFailure {
+            _events.tryEmit(it.message ?: "Erro ao salvar")
+        }.getOrNull()
+    }
+
+    companion object {
+        private const val NAME_DESC_DEBOUNCE_MS = 500L
     }
 }

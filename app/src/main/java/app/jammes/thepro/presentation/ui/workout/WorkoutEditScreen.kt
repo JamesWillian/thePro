@@ -24,11 +24,9 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -74,9 +72,6 @@ fun WorkoutEditScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { snackbar.showSnackbar(it) }
     }
-    LaunchedEffect(state.saved) {
-        if (state.saved) onBack()
-    }
 
     var pickerOpen by remember { mutableStateOf(false) }
 
@@ -90,13 +85,6 @@ fun WorkoutEditScreen(
                     }
                 },
                 windowInsets = WindowInsets(0, 0, 0, 0)
-            )
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = viewModel::save,
-                icon = { Icon(Icons.Filled.Save, contentDescription = null) },
-                text = { Text("Salvar") }
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },
