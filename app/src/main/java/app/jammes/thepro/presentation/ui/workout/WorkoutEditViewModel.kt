@@ -51,7 +51,7 @@ class WorkoutEditViewModel @Inject constructor(
     val events = _events.asSharedFlow()
 
     private val saveMutex = Mutex()
-    private var nameDescDebounceJob: Job? = null
+    private var debouncedSaveJob: Job? = null
 
     fun load(id: Long?) {
         if (id == null || id <= 0) return
@@ -73,12 +73,12 @@ class WorkoutEditViewModel @Inject constructor(
 
     fun setName(value: String) {
         _state.update { it.copy(name = value) }
-        scheduleNameDescAutoSave()
+        scheduleDebouncedSave()
     }
 
     fun setDescription(value: String) {
         _state.update { it.copy(description = value) }
-        scheduleNameDescAutoSave()
+        scheduleDebouncedSave()
     }
 
     fun addExercise(exercise: Exercise) {
@@ -104,6 +104,7 @@ class WorkoutEditViewModel @Inject constructor(
                 if (index in it.indices) it[index] = transform(it[index])
             })
         }
+        scheduleDebouncedSave()
     }
 
     fun removeItem(index: Int) {
@@ -137,11 +138,11 @@ class WorkoutEditViewModel @Inject constructor(
         viewModelScope.launch { performSave() }
     }
 
-    private fun scheduleNameDescAutoSave() {
+    private fun scheduleDebouncedSave() {
         if (_state.value.items.isEmpty()) return
-        nameDescDebounceJob?.cancel()
-        nameDescDebounceJob = viewModelScope.launch {
-            delay(NAME_DESC_DEBOUNCE_MS)
+        debouncedSaveJob?.cancel()
+        debouncedSaveJob = viewModelScope.launch {
+            delay(DEBOUNCE_MS)
             performSave()
         }
     }
@@ -162,6 +163,6 @@ class WorkoutEditViewModel @Inject constructor(
     }
 
     companion object {
-        private const val NAME_DESC_DEBOUNCE_MS = 500L
+        private const val DEBOUNCE_MS = 500L
     }
 }
