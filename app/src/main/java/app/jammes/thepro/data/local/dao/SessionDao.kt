@@ -31,6 +31,9 @@ interface SessionDao {
     @Query("UPDATE workout_sessions SET date = :newEpochDay, original_date = COALESCE(original_date, :originalEpochDay), status = :status WHERE id = :id")
     suspend fun reschedule(id: Long, newEpochDay: Long, originalEpochDay: Long, status: String)
 
+    @Query("DELETE FROM workout_sessions WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
     @Query("SELECT * FROM exercise_logs WHERE session_id = :sessionId")
     fun observeLogs(sessionId: Long): Flow<List<ExerciseLogEntity>>
 

@@ -68,14 +68,45 @@ class SessionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun ensureSessionsForDate(date: LocalDate): List<WorkoutSession> {
-        val dow = DayOfWeekBr.fromJavaDayOfWeek(date.dayOfWeek)
         return database.withTransaction {
             val existing = sessionDao.listForDate(date.toEpochDay())
-            if (existing.isNotEmpty()) {
-                return@withTransaction existing.toDomainList()
+            if (existing.isEmpty()) {
+                materializeFromSchedule(date)
+            } else {
+                reconcileInternal(date)
             }
-            val schedule = scheduleDao.listForDay(dow.isoValue)
-            schedule.forEach { entry ->
+            sessionDao.listForDate(date.toEpochDay()).toDomainList()
+        }
+    }
+
+    override suspend fun reconcileForDate(date: LocalDate) {
+        database.withTransaction { reconcileInternal(date) }
+    }
+
+    /**
+     * Sincroniza sessões pendentes (sem logs) com o schedule atual.
+     * - Remove sessões PENDENTE+vazias cujo workoutId não está mais no schedule do dia.
+     * - Cria sessões pendentes para entradas do schedule que ainda não foram materializadas.
+     * Só age em datas >= hoje; passado é histórico imutável.
+     */
+    private suspend fun reconcileInternal(date: LocalDate) {
+        if (date.isBefore(LocalDate.now())) return
+        val dow = DayOfWeekBr.fromJavaDayOfWeek(date.dayOfWeek)
+        val schedule = scheduleDao.listForDay(dow.isoValue)
+        val scheduleWorkoutIds = schedule.map { it.workoutId }.toSet()
+        val existing = sessionDao.listForDate(date.toEpochDay())
+
+        existing.forEach { s ->
+            if (s.status == SessionStatus.PENDENTE.name && s.workoutId !in scheduleWorkoutIds) {
+                if (sessionDao.listLogs(s.id).isEmpty()) {
+                    sessionDao.deleteById(s.id)
+                }
+            }
+        }
+
+        val existingWorkoutIds = sessionDao.listForDate(date.toEpochDay()).map { it.workoutId }.toSet()
+        schedule.forEach { entry ->
+            if (entry.workoutId !in existingWorkoutIds) {
                 sessionDao.insert(
                     WorkoutSessionEntity(
                         dateEpochDay = date.toEpochDay(),
@@ -86,7 +117,21 @@ class SessionRepositoryImpl @Inject constructor(
                     )
                 )
             }
-            sessionDao.listForDate(date.toEpochDay()).toDomainList()
+        }
+    }
+
+    private suspend fun materializeFromSchedule(date: LocalDate) {
+        val dow = DayOfWeekBr.fromJavaDayOfWeek(date.dayOfWeek)
+        scheduleDao.listForDay(dow.isoValue).forEach { entry ->
+            sessionDao.insert(
+                WorkoutSessionEntity(
+                    dateEpochDay = date.toEpochDay(),
+                    workoutId = entry.workoutId,
+                    status = SessionStatus.PENDENTE.name,
+                    originalDateEpochDay = null,
+                    notes = ""
+                )
+            )
         }
     }
 

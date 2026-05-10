@@ -28,12 +28,8 @@ class ScheduleRepositoryImpl @Inject constructor(
             if (entries.isEmpty()) {
                 flowOf(DayOfWeekBr.entries.associateWith { emptyList<WeeklyScheduleEntry>() })
             } else {
-                combine(entries.map { entry ->
-                    workoutDao.observeById(entry.workoutId).map { w -> entry to w }
-                }) { pairs ->
-                    val mapped = pairs.mapNotNull { (entry, workout) ->
-                        workout?.let { entry.toDomain(it.toDomain()) }
-                    }
+                combine(entries.map { entry -> entryFlow(entry) }) { pairs ->
+                    val mapped = pairs.filterNotNull().toList()
                     DayOfWeekBr.entries.associateWith { day ->
                         mapped.filter { it.dayOfWeek == day }.sortedBy { it.orderIndex }
                     }
@@ -45,13 +41,17 @@ class ScheduleRepositoryImpl @Inject constructor(
     override fun observeForDay(day: DayOfWeekBr): Flow<List<WeeklyScheduleEntry>> =
         scheduleDao.observeForDay(day.isoValue).flatMapLatest { entries ->
             if (entries.isEmpty()) flowOf(emptyList())
-            else combine(entries.map { entry ->
-                workoutDao.observeById(entry.workoutId).map { w -> entry to w }
-            }) { pairs ->
-                pairs.mapNotNull { (entry, workout) ->
-                    workout?.let { entry.toDomain(it.toDomain()) }
-                }.sortedBy { it.orderIndex }
+            else combine(entries.map { entry -> entryFlow(entry) }) { results ->
+                results.filterNotNull().toList().sortedBy { it.orderIndex }
             }
+        }
+
+    private fun entryFlow(entry: app.jammes.thepro.data.local.entity.ScheduleEntryEntity): Flow<WeeklyScheduleEntry?> =
+        combine(
+            workoutDao.observeById(entry.workoutId),
+            workoutDao.observeWorkoutExercises(entry.workoutId)
+        ) { w, rows ->
+            w?.let { entry.toDomain(it.toDomain(rows.map { r -> r.toDomain() })) }
         }
 
     override suspend fun assign(day: DayOfWeekBr, workoutId: Long): Long {

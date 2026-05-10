@@ -4,12 +4,24 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group android:translateX="0" android:translateY="0">
-        <path
-            android:fillColor="#FFFFFFFF"
-            android:pathData="M30,42 L36,42 L36,52 L48,52 L48,42 L54,42 L54,72 L48,72 L48,58 L36,58 L36,72 L30,72 Z" />
-        <path
-            android:fillColor="#FFFFFFFF"
-            android:pathData="M58,42 L78,42 L78,48 L70,48 L70,72 L66,72 L66,48 L58,48 Z" />
-    </group>
+
+    <!-- Soft halo (lighter navy) for depth, sits within safe zone -->
+    <path
+        android:fillColor="#FF1E3E62"
+        android:pathData="M22,54 a32,32 0 1,0 64,0 a32,32 0 1,0 -64,0 z" />
+
+    <!-- "P" stem -->
+    <path
+        android:fillColor="#FFFF6500"
+        android:pathData="M36,23 h14 v64 h-14 z" />
+
+    <!-- "P" bowl (filled disc) -->
+    <path
+        android:fillColor="#FFFF6500"
+        android:pathData="M37,41 a18,18 0 1,0 36,0 a18,18 0 1,0 -36,0 z" />
+
+    <!-- "P" bowl interior (hole punched to background navy) -->
+    <path
+        android:fillColor="#FF0B192C"
+        android:pathData="M52,41 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 z" />
 </vector>

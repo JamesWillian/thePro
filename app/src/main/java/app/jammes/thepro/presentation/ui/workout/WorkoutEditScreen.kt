@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -272,17 +273,35 @@ private fun WorkoutExerciseEditor(
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = MaterialTheme.colorScheme.outlineVariant
             )
+            var setsText by remember(item.exercise.id) { mutableStateOf(item.sets.toString()) }
+            var repsText by remember(item.exercise.id) { mutableStateOf(item.reps?.toString().orEmpty()) }
+            var weightText by remember(item.exercise.id) {
+                mutableStateOf(item.suggestedWeightKg?.let { formatNumber(it) }.orEmpty())
+            }
+            var durationText by remember(item.exercise.id) {
+                mutableStateOf(item.durationSeconds?.toString().orEmpty())
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 NumberField(
                     label = "Séries",
-                    value = item.sets.toString(),
-                    onValue = { v -> onUpdate { it.copy(sets = v.toIntOrNull() ?: it.sets) } },
+                    value = setsText,
+                    onValue = { v ->
+                        if (v.isEmpty() || v.all { ch -> ch.isDigit() }) {
+                            setsText = v
+                            v.toIntOrNull()?.let { n -> onUpdate { it.copy(sets = n) } }
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 )
                 NumberField(
                     label = "Reps",
-                    value = item.reps?.toString().orEmpty(),
-                    onValue = { v -> onUpdate { it.copy(reps = v.toIntOrNull()) } },
+                    value = repsText,
+                    onValue = { v ->
+                        if (v.isEmpty() || v.all { ch -> ch.isDigit() }) {
+                            repsText = v
+                            onUpdate { it.copy(reps = v.toIntOrNull()) }
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -290,8 +309,9 @@ private fun WorkoutExerciseEditor(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 NumberField(
                     label = "Carga (kg)",
-                    value = item.suggestedWeightKg?.let { formatNumber(it) }.orEmpty(),
+                    value = weightText,
                     onValue = { v ->
+                        weightText = v
                         onUpdate { it.copy(suggestedWeightKg = v.replace(",", ".").toDoubleOrNull()) }
                     },
                     modifier = Modifier.weight(1f),
@@ -299,8 +319,13 @@ private fun WorkoutExerciseEditor(
                 )
                 NumberField(
                     label = "Duração (s)",
-                    value = item.durationSeconds?.toString().orEmpty(),
-                    onValue = { v -> onUpdate { it.copy(durationSeconds = v.toIntOrNull()) } },
+                    value = durationText,
+                    onValue = { v ->
+                        if (v.isEmpty() || v.all { ch -> ch.isDigit() }) {
+                            durationText = v
+                            onUpdate { it.copy(durationSeconds = v.toIntOrNull()) }
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -367,6 +392,13 @@ private fun ExercisePickerDialog(
                     label = { Text("Buscar") },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
+                    trailingIcon = {
+                        if (query.isNotEmpty()) {
+                            IconButton(onClick = { query = "" }) {
+                                Icon(Icons.Filled.Clear, contentDescription = "Limpar")
+                            }
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(12.dp))
