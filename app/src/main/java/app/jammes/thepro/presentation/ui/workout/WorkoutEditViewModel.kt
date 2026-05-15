@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -123,6 +124,30 @@ class WorkoutEditViewModel @Inject constructor(
         triggerAutoSave()
     }
 
+    /**
+     * Substitui o exercício no índice por outro, mantendo a planilha (sets/reps/carga/duração).
+     * Marca como id=0 para que o save (diff) trate como remoção do antigo + inserção do novo.
+     */
+    fun substituteAt(index: Int, newExercise: Exercise) {
+        _state.update { current ->
+            if (index !in current.items.indices) return@update current
+            val list = current.items.toMutableList()
+            val old = list[index]
+            list[index] = WorkoutExercise(
+                id = 0L,
+                workoutId = current.id ?: 0L,
+                exercise = newExercise,
+                sets = old.sets,
+                reps = old.reps,
+                suggestedWeightKg = old.suggestedWeightKg,
+                durationSeconds = old.durationSeconds,
+                orderIndex = old.orderIndex
+            )
+            current.copy(items = list)
+        }
+        triggerAutoSave()
+    }
+
     fun moveItem(from: Int, to: Int) {
         _state.update { current ->
             if (from !in current.items.indices || to !in current.items.indices) return@update current
@@ -156,6 +181,12 @@ class WorkoutEditViewModel @Inject constructor(
                 s.items
             )
             if (s.id != id) _state.update { it.copy(id = id) }
+            // Re-sincroniza items com o DB: substituições/inserts geram novos IDs;
+            // sem isso, o próximo save trataria os IDs locais (0L ou stale) como inserts duplicados.
+            val refreshed = observeWorkout(id).first()
+            if (refreshed != null) {
+                _state.update { it.copy(items = refreshed.exercises) }
+            }
             id
         }.onFailure {
             _events.tryEmit(it.message ?: "Erro ao salvar")

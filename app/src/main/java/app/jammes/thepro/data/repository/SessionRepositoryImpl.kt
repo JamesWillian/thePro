@@ -50,7 +50,9 @@ class SessionRepositoryImpl @Inject constructor(
         return combine(sessions.map { s ->
             combine(
                 workoutDao.observeById(s.workoutId),
-                workoutDao.observeWorkoutExercises(s.workoutId),
+                // Inclui exercícios ativos do template + inativos que ainda têm log nesta sessão
+                // (ex: exercício foi removido do treino mas o user já tinha concluído).
+                workoutDao.observeWorkoutExercisesForSession(s.workoutId, s.id),
                 sessionDao.observeLogs(s.id)
             ) { workoutEntity, exerciseRows, logs ->
                 val workout = workoutEntity?.toDomain(exerciseRows.map { it.toDomain() })
@@ -161,8 +163,35 @@ class SessionRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun upsertExerciseLog(log: ExerciseLog): Long =
-        sessionDao.upsertLog(log.toEntity())
+    override suspend fun upsertExerciseLog(log: ExerciseLog): Long {
+        val id = sessionDao.upsertLog(log.toEntity())
+        refreshSessionStatus(log.sessionId)
+        return id
+    }
+
+    /**
+     * Marca a sessão como CONCLUIDO se todos os exercícios ativos do treino têm log
+     * com performed=true. Caso contrário, garante que esteja PENDENTE.
+     * Não mexe em sessões REMARCADO (ação explícita do usuário).
+     */
+    private suspend fun refreshSessionStatus(sessionId: Long) {
+        val session = sessionDao.getById(sessionId) ?: return
+        if (session.status == SessionStatus.REMARCADO.name) return
+
+        val activeIds = workoutDao.getActiveWorkoutExerciseIds(session.workoutId)
+        if (activeIds.isEmpty()) return
+
+        val performedIds = sessionDao.listLogs(sessionId)
+            .filter { it.performed }
+            .map { it.workoutExerciseId }
+            .toSet()
+
+        val allDone = activeIds.all { it in performedIds }
+        val target = if (allDone) SessionStatus.CONCLUIDO else SessionStatus.PENDENTE
+        if (session.status != target.name) {
+            sessionDao.updateStatus(sessionId, target.name)
+        }
+    }
 
     override suspend fun getSession(sessionId: Long): WorkoutSession? {
         val session = sessionDao.getById(sessionId) ?: return null

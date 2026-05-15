@@ -40,6 +40,9 @@ interface SessionDao {
     @Query("SELECT * FROM exercise_logs WHERE session_id = :sessionId")
     suspend fun listLogs(sessionId: Long): List<ExerciseLogEntity>
 
+    @Query("SELECT COUNT(*) FROM exercise_logs WHERE workout_exercise_id = :workoutExerciseId AND performed = 1")
+    suspend fun countPerformedLogs(workoutExerciseId: Long): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertLog(entity: ExerciseLogEntity): Long
 }

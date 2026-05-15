@@ -2,6 +2,7 @@ package app.jammes.thepro.data.repository
 
 import app.jammes.thepro.data.local.AppDatabase
 import app.jammes.thepro.data.local.dao.ExerciseDao
+import app.jammes.thepro.data.local.dao.SessionDao
 import app.jammes.thepro.data.local.dao.WorkoutDao
 import app.jammes.thepro.data.local.entity.ExerciseEntity
 import app.jammes.thepro.data.local.entity.WorkoutEntity
@@ -27,7 +28,8 @@ import javax.inject.Singleton
 class WorkoutRepositoryImpl @Inject constructor(
     private val database: AppDatabase,
     private val workoutDao: WorkoutDao,
-    private val exerciseDao: ExerciseDao
+    private val exerciseDao: ExerciseDao,
+    private val sessionDao: SessionDao
 ) : WorkoutRepository {
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -66,11 +68,30 @@ class WorkoutRepositoryImpl @Inject constructor(
 
     override suspend fun replaceExercises(workoutId: Long, items: List<WorkoutExercise>) {
         database.withTransaction {
-            workoutDao.deleteExercisesOf(workoutId)
-            if (items.isNotEmpty()) {
-                workoutDao.insertWorkoutExercises(
-                    items.map { it.toEntity(workoutId).copy(id = 0L) }
-                )
+            val current = workoutDao.getActiveWorkoutExerciseEntities(workoutId)
+            val newIds = items.mapNotNull { it.id.takeIf { id -> id > 0L } }.toSet()
+
+            // Linhas removidas do template: se já tiveram log com performed=true,
+            // marcar como inativas (preserva histórico). Caso contrário, deletar.
+            current.forEach { row ->
+                if (row.id !in newIds) {
+                    val performedCount = sessionDao.countPerformedLogs(row.id)
+                    if (performedCount > 0) {
+                        workoutDao.markWorkoutExerciseInactive(row.id)
+                    } else {
+                        workoutDao.deleteWorkoutExerciseById(row.id)
+                    }
+                }
+            }
+
+            // Inserir novos / atualizar existentes preservando IDs (logs sobrevivem).
+            items.forEachIndexed { idx, item ->
+                val entity = item.toEntity(workoutId).copy(orderIndex = idx, activeInWorkout = true)
+                if (entity.id == 0L) {
+                    workoutDao.insertWorkoutExercise(entity)
+                } else {
+                    workoutDao.updateWorkoutExercise(entity)
+                }
             }
         }
     }

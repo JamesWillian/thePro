@@ -39,5 +39,6 @@ data class WorkoutExerciseEntity(
     @ColumnInfo(name = "reps") val reps: Int?,
     @ColumnInfo(name = "weight_kg") val weightKg: Double?,
     @ColumnInfo(name = "duration_seconds") val durationSeconds: Int?,
-    @ColumnInfo(name = "order_index") val orderIndex: Int
+    @ColumnInfo(name = "order_index") val orderIndex: Int,
+    @ColumnInfo(name = "active_in_workout", defaultValue = "1") val activeInWorkout: Boolean = true
 )

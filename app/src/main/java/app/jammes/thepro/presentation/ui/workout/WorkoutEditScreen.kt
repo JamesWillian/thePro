@@ -16,9 +16,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,10 +33,13 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +56,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +66,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.jammes.thepro.domain.model.Exercise
 import app.jammes.thepro.domain.model.WorkoutExercise
@@ -81,7 +89,7 @@ fun WorkoutEditScreen(
         viewModel.events.collect { snackbar.showSnackbar(it) }
     }
 
-    var pickerOpen by remember { mutableStateOf(false) }
+    var pickerMode by remember { mutableStateOf<PickerMode?>(null) }
 
     Scaffold(
         topBar = {
@@ -147,7 +155,7 @@ fun WorkoutEditScreen(
                     )
                 }
                 OutlinedButton(
-                    onClick = { pickerOpen = true },
+                    onClick = { pickerMode = PickerMode.Add },
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(Icons.Filled.Add, null)
@@ -186,7 +194,8 @@ fun WorkoutEditScreen(
                             onUpdate = { tx -> viewModel.updateItem(index, tx) },
                             onRemove = { viewModel.removeItem(index) },
                             onMoveUp = { viewModel.moveItem(index, index - 1) },
-                            onMoveDown = { viewModel.moveItem(index, index + 1) }
+                            onMoveDown = { viewModel.moveItem(index, index + 1) },
+                            onSubstitute = { pickerMode = PickerMode.Substitute(index) }
                         )
                     }
                 }
@@ -194,15 +203,26 @@ fun WorkoutEditScreen(
         }
     }
 
-    if (pickerOpen) {
-        ExercisePickerDialog(
+    val mode = pickerMode
+    if (mode != null) {
+        ExercisePickerSheet(
+            mode = mode,
             available = available,
             selectedIds = state.items.map { it.exercise.id }.toSet(),
-            onDismiss = { pickerOpen = false },
+            onDismiss = { pickerMode = null },
             onAdd = viewModel::addExercise,
-            onRemove = viewModel::removeExerciseById
+            onRemove = viewModel::removeExerciseById,
+            onSubstitute = { idx, exercise ->
+                viewModel.substituteAt(idx, exercise)
+                pickerMode = null
+            }
         )
     }
+}
+
+sealed interface PickerMode {
+    data object Add : PickerMode
+    data class Substitute(val itemIndex: Int) : PickerMode
 }
 
 @Composable
@@ -213,7 +233,8 @@ private fun WorkoutExerciseEditor(
     onUpdate: ((WorkoutExercise) -> WorkoutExercise) -> Unit,
     onRemove: () -> Unit,
     onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit
+    onMoveDown: () -> Unit,
+    onSubstitute: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -256,6 +277,17 @@ private fun WorkoutExerciseEditor(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+            }
+            Spacer(Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onSubstitute) {
+                    Icon(Icons.Filled.SwapHoriz, "Substituir exercício",
+                        tint = MaterialTheme.colorScheme.primary)
+                }
                 IconButton(onClick = onMoveUp, enabled = index > 0) {
                     Icon(Icons.Filled.ArrowUpward, "Subir",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -270,7 +302,7 @@ private fun WorkoutExerciseEditor(
                 }
             }
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 12.dp),
+                modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
                 color = MaterialTheme.colorScheme.outlineVariant
             )
             var setsText by remember(item.exercise.id) { mutableStateOf(item.sets.toString()) }
@@ -355,14 +387,19 @@ private fun NumberField(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ExercisePickerDialog(
+private fun ExercisePickerSheet(
+    mode: PickerMode,
     available: List<Exercise>,
     selectedIds: Set<Long>,
     onDismiss: () -> Unit,
     onAdd: (Exercise) -> Unit,
-    onRemove: (Long) -> Unit
+    onRemove: (Long) -> Unit,
+    onSubstitute: (Int, Exercise) -> Unit
 ) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
     var query by remember { mutableStateOf("") }
     val filtered = remember(available, query) {
         if (query.isBlank()) available
@@ -371,61 +408,134 @@ private fun ExercisePickerDialog(
                 it.type.displayName.contains(query, ignoreCase = true)
         }
     }
-    AlertDialog(
+    val isSubstitute = mode is PickerMode.Substitute
+
+    fun closeWith(action: () -> Unit) {
+        scope.launch { sheetState.hide() }.invokeOnCompletion {
+            if (!sheetState.isVisible) action()
+        }
+    }
+
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
-        title = {
-            Column {
-                Text("Exercícios", style = MaterialTheme.typography.titleLarge)
-                Text(
-                    "${selectedIds.size} selecionado(s)",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    label = { Text("Buscar") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
-                    trailingIcon = {
-                        if (query.isNotEmpty()) {
-                            IconButton(onClick = { query = "" }) {
-                                Icon(Icons.Filled.Clear, contentDescription = "Limpar")
-                            }
+        dragHandle = {
+            BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.outlineVariant)
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 8.dp)
+        ) {
+            Text(
+                if (isSubstitute) "Substituir exercício" else "Exercícios",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                if (isSubstitute) "Toque em um exercício para selecionar"
+                else "${selectedIds.size} selecionado(s)",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(Modifier.height(14.dp))
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                placeholder = { Text("Buscar exercício…") },
+                singleLine = true,
+                shape = RoundedCornerShape(14.dp),
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { query = "" }) {
+                            Icon(Icons.Filled.Clear, contentDescription = "Limpar")
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(Modifier.height(12.dp))
-                if (filtered.isEmpty()) {
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(12.dp))
+            if (filtered.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        "Nenhum exercício encontrado. Cadastre na aba Exercícios.",
+                        "Nenhum exercício encontrado.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                } else {
-                    LazyColumn(modifier = Modifier.fillMaxWidth().height(380.dp)) {
-                        itemsIndexed(filtered, key = { _, e -> e.id }) { idx, exercise ->
-                            ExercisePickerRow(
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 480.dp)
+                ) {
+                    itemsIndexed(filtered, key = { _, e -> e.id }) { idx, exercise ->
+                        when (mode) {
+                            is PickerMode.Add -> ExercisePickerRow(
                                 exercise = exercise,
                                 isSelected = exercise.id in selectedIds,
                                 onAdd = { onAdd(exercise) },
                                 onRemove = { onRemove(exercise.id) }
                             )
-                            if (idx < filtered.lastIndex) {
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                            }
+                            is PickerMode.Substitute -> ExerciseSubstituteRow(
+                                exercise = exercise,
+                                onClick = { closeWith { onSubstitute(mode.itemIndex, exercise) } }
+                            )
+                        }
+                        if (idx < filtered.lastIndex) {
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
                     }
                 }
             }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Fechar") } }
-    )
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = { closeWith(onDismiss) }) {
+                    Text(if (isSubstitute) "Cancelar" else "Fechar")
+                }
+            }
+            // safe area inferior (system nav bar)
+            Spacer(
+                modifier = Modifier.windowInsetsBottomHeight(
+                    WindowInsets.navigationBars
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExerciseSubstituteRow(exercise: Exercise, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(exercise.name, fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                exercise.type.displayName,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Icon(
+            imageVector = Icons.Filled.SwapHoriz,
+            contentDescription = "Selecionar",
+            tint = MaterialTheme.colorScheme.primary
+        )
+    }
 }
 
 @Composable
